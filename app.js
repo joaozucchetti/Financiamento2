@@ -634,7 +634,6 @@ function exportarPDF() {
     doc.setFont('Times', 'normal');
     doc.text('RECOMENDAÇÃO', 87, y + 2);
     
-    y += 10;
     
     // Sistema recomendado em destaque
     doc.setFillColor(250, 250, 250);
