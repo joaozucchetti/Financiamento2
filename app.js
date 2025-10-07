@@ -475,7 +475,7 @@ function exportarPDF() {
     doc.text(`${numeroParcelas} meses`, 70, y + 10);
 
     // ========== CARDS DE COMPARAÇÃO ==========
-    y = 55;
+    y = 60; // Aumentado de 55 para 70 para dar mais espaço
     
     const primeiraParcelaPRICE_card = dadosPRICE.parcelas[0];
     const ultimaParcelaSAC_card = dadosSAC.parcelas[dadosSAC.parcelas.length - 1];
@@ -591,7 +591,7 @@ function exportarPDF() {
     doc.text(formatarMoeda(dadosSAC.totalPago), 155, y + 36);
 
     // ========== RECOMENDAÇÃO EM DESTAQUE ==========
-    y = 105;
+    y = 120; // Aumentado de 105 para 120 para dar mais espaço após os cards
     
     // Calcular dados para recomendação
     const economiaJuros = dadosPRICE.totalJuros - dadosSAC.totalJuros;
@@ -631,8 +631,8 @@ function exportarPDF() {
     
     doc.setFontSize(12);
     doc.setTextColor(255, 255, 255);
-    doc.setFont('times', 'bold');
-    doc.text('RECOMENDAÇÃO', 25, y + 2);
+    doc.setFont('Times', 'normal');
+    doc.text('RECOMENDAÇÃO', 87, y + 2);
     
     y += 10;
     
