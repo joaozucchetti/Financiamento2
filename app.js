@@ -634,6 +634,7 @@ function exportarPDF() {
     doc.setFont('Times', 'normal');
     doc.text('RECOMENDAÇÃO', 87, y + 2);
     
+    y += 15; // Aumentado de 0 para 15 para dar mais espaço após o título
     
     // Sistema recomendado em destaque
     doc.setFillColor(250, 250, 250);
