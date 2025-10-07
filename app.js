@@ -1,64 +1,88 @@
+// ========== FUNÇÕES DE MÁSCARA ==========
+
 function mascaraMoeda(valor) {
-    valor = valor.replace(/\D/g, '');
-    valor = valor.replace(/(\d)(\d{2})$/, '$1,$2');
-    valor = valor.replace(/(?=(\d{3})+(\D))\B/g, '.');
+    valor = valor.replace(/\D/g, ''); // Remove tudo que não é dígito
+    valor = valor.replace(/(\d)(\d{2})$/, '$1,$2'); // Coloca vírgula antes dos 2 últimos dígitos
+    valor = valor.replace(/(?=(\d{3})+(\D))\B/g, '.'); // Coloca ponto a cada 3 dígitos
     return valor;
 }
 
+// Máscara para taxa de juros (xx,xx)
 function mascaraTaxa(valor) {
-    valor = valor.replace(/\D/g, '');
-    valor = valor.replace(/(\d)(\d{2})$/, '$1,$2');
+    valor = valor.replace(/\D/g, ''); // Remove tudo que não é dígito
+    valor = valor.replace(/(\d)(\d{2})$/, '$1,$2'); // Coloca vírgula antes dos 2 últimos dígitos
     return valor;
 }
 
+// Máscara para número inteiro (somente números)
 function mascaraInteiro(valor) {
-    return valor.replace(/\D/g, '');
+    return valor.replace(/\D/g, ''); // Remove tudo que não é dígito
 }
 
+// Converter valor formatado para número
 function converterParaNumero(valor) {
     return parseFloat(valor.replace(/\./g, '').replace(',', '.'));
 }
 
+// Aplicar máscaras nos inputs
 document.addEventListener('DOMContentLoaded', function() {
     const inputValor = document.getElementById('valorFinanciado');
     const inputTaxa = document.getElementById('taxaJuros');
     const inputParcelas = document.getElementById('numeroParcelas');
 
+    // Máscara para valor financiado
     inputValor.addEventListener('input', function(e) {
         let valor = e.target.value;
         e.target.value = mascaraMoeda(valor);
     });
 
+    // Máscara para taxa de juros
     inputTaxa.addEventListener('input', function(e) {
         let valor = e.target.value;
         e.target.value = mascaraTaxa(valor);
     });
 
+    // Máscara para número de parcelas
     inputParcelas.addEventListener('input', function(e) {
         let valor = e.target.value;
         e.target.value = mascaraInteiro(valor);
     });
 });
 
+// ========== FUNÇÕES DE FORMATAÇÃO ==========
+
+// Função para formatar valores em reais
 function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+// ========== FUNÇÕES DE CÁLCULO ==========
+
+// Função para calcular sistema PRICE
 function calcularPRICE(valorFinanciado, taxaJuros, numeroParcelas) {
     const taxa = taxaJuros / 100;
     const parcelas = [];
+    
+    // Fórmula da prestação constante no sistema PRICE
     const prestacao = valorFinanciado * (taxa * Math.pow(1 + taxa, numeroParcelas)) / (Math.pow(1 + taxa, numeroParcelas) - 1);
+    
     let saldoDevedor = valorFinanciado;
     let totalJuros = 0;
     let totalAmortizacao = 0;
-
+    
     for (let i = 1; i <= numeroParcelas; i++) {
         const juros = saldoDevedor * taxa;
         const amortizacao = prestacao - juros;
         saldoDevedor -= amortizacao;
-        if (i === numeroParcelas) saldoDevedor = 0;
+        
+        // Corrigir possíveis erros de arredondamento na última parcela
+        if (i === numeroParcelas) {
+            saldoDevedor = 0;
+        }
+        
         totalJuros += juros;
         totalAmortizacao += amortizacao;
+        
         parcelas.push({
             numero: i,
             prestacao: prestacao,
@@ -67,7 +91,7 @@ function calcularPRICE(valorFinanciado, taxaJuros, numeroParcelas) {
             saldoDevedor: Math.max(0, saldoDevedor)
         });
     }
-
+    
     return {
         parcelas: parcelas,
         totalPago: valorFinanciado + totalJuros,
@@ -76,21 +100,31 @@ function calcularPRICE(valorFinanciado, taxaJuros, numeroParcelas) {
     };
 }
 
+// Função para calcular sistema SAC
 function calcularSAC(valorFinanciado, taxaJuros, numeroParcelas) {
     const taxa = taxaJuros / 100;
     const parcelas = [];
+    
+    // Amortização constante no sistema SAC
     const amortizacao = valorFinanciado / numeroParcelas;
+    
     let saldoDevedor = valorFinanciado;
     let totalJuros = 0;
     let totalPrestacao = 0;
-
+    
     for (let i = 1; i <= numeroParcelas; i++) {
         const juros = saldoDevedor * taxa;
         const prestacao = amortizacao + juros;
         saldoDevedor -= amortizacao;
-        if (i === numeroParcelas) saldoDevedor = 0;
+        
+        // Corrigir possíveis erros de arredondamento na última parcela
+        if (i === numeroParcelas) {
+            saldoDevedor = 0;
+        }
+        
         totalJuros += juros;
         totalPrestacao += prestacao;
+        
         parcelas.push({
             numero: i,
             prestacao: prestacao,
@@ -99,7 +133,7 @@ function calcularSAC(valorFinanciado, taxaJuros, numeroParcelas) {
             saldoDevedor: Math.max(0, saldoDevedor)
         });
     }
-
+    
     return {
         parcelas: parcelas,
         totalPago: valorFinanciado + totalJuros,
@@ -108,6 +142,9 @@ function calcularSAC(valorFinanciado, taxaJuros, numeroParcelas) {
     };
 }
 
+// ========== FUNÇÕES DE INTERFACE ==========
+
+// Função para criar cards de comparação
 function criarCardsComparacao(dadosPRICE, dadosSAC, valorFinanciado) {
     const primeiraParcelaPRICE = dadosPRICE.parcelas[0];
     const ultimaParcelaPRICE = dadosPRICE.parcelas[dadosPRICE.parcelas.length - 1];
@@ -177,6 +214,7 @@ function criarCardsComparacao(dadosPRICE, dadosSAC, valorFinanciado) {
     `;
 }
 
+// Função para criar recomendação
 function criarRecomendacao(dadosPRICE, dadosSAC, valorFinanciado, numeroParcelas) {
     const economiaJuros = dadosPRICE.totalJuros - dadosSAC.totalJuros;
     const economiaTotal = dadosPRICE.totalPago - dadosSAC.totalPago;
@@ -191,9 +229,10 @@ function criarRecomendacao(dadosPRICE, dadosSAC, valorFinanciado, numeroParcelas
     let sistemaRecomendado = '';
     let textoCompleto = '';
     
+    // Análise para determinar o melhor sistema
     let topicos = [];
     
-    if (economiaTotal > 0 && economiaTotal > (valorFinanciado * 0.01)) {
+    if (economiaTotal > 0 && economiaTotal > (valorFinanciado * 0.01)) { // Economia significativa (>1%)
         sistemaRecomendado = 'SAC';
         
         topicos.push(`Economia total de <span style="color: #2c2c2c; font-weight: 700;">${formatarMoeda(economiaTotal)}</span> (<span style="color: #2c2c2c; font-weight: 700;">${percentualEconomia}%</span> a menos) em relação ao sistema PRICE`);
@@ -243,6 +282,7 @@ function criarRecomendacao(dadosPRICE, dadosSAC, valorFinanciado, numeroParcelas
     return html;
 }
 
+// Função para criar tabela
 function criarTabela(titulo, parcelas, valorTotal) {
     let html = `
         <div class="table-wrapper">
@@ -283,15 +323,23 @@ function criarTabela(titulo, parcelas, valorTotal) {
     return html;
 }
 
+// ========== VARIÁVEIS GLOBAIS ==========
+
+// Variáveis globais para exportação
 let dadosCalculoGlobal = null;
 
+// ========== EVENT LISTENERS ==========
+
+// Event listener para o formulário
 document.getElementById('financingForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
+    // Converter valores formatados para números
     const valorFinanciadoStr = document.getElementById('valorFinanciado').value;
     const taxaJurosStr = document.getElementById('taxaJuros').value;
     const numeroParcelas = parseInt(document.getElementById('numeroParcelas').value.replace(/\D/g, ''));
 
+    // Validar se os campos estão preenchidos
     if (!valorFinanciadoStr || !taxaJurosStr || !numeroParcelas) {
         alert('Por favor, preencha todos os campos.');
         return;
@@ -306,13 +354,17 @@ document.getElementById('financingForm').addEventListener('submit', function(e) 
         return;
     }
 
+    // Mostrar loading
     document.getElementById('loading').classList.add('active');
     document.getElementById('resultsSection').classList.remove('active');
 
+    // Simular delay para mostrar o loading
     setTimeout(() => {
+        // Calcular ambos os sistemas
         const dadosPRICE = calcularPRICE(valorFinanciado, taxaJuros, numeroParcelas);
         const dadosSAC = calcularSAC(valorFinanciado, taxaJuros, numeroParcelas);
 
+        // Armazenar dados globalmente para exportação
         dadosCalculoGlobal = {
             valorFinanciado,
             taxaJuros,
@@ -321,24 +373,32 @@ document.getElementById('financingForm').addEventListener('submit', function(e) 
             dadosSAC
         };
 
+        // Criar cards de comparação
         document.getElementById('comparisonCards').innerHTML = 
             criarCardsComparacao(dadosPRICE, dadosSAC, valorFinanciado);
 
+        // Criar recomendação
         document.getElementById('recommendationSection').innerHTML = 
             criarRecomendacao(dadosPRICE, dadosSAC, valorFinanciado, numeroParcelas);
 
+        // Criar tabelas
         document.getElementById('tablesContainer').innerHTML = 
             criarTabela('Tabela PRICE', dadosPRICE.parcelas, dadosPRICE.totalPago) +
             criarTabela('Tabela SAC', dadosSAC.parcelas, dadosSAC.totalPago);
 
+        // Esconder loading e mostrar resultados
         document.getElementById('loading').classList.remove('active');
         document.getElementById('resultsSection').classList.add('active');
         document.getElementById('btnExport').style.display = 'inline-block';
 
+        // Scroll suave para os resultados
         document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
     }, 500);
 });
 
+// ========== FUNÇÕES AUXILIARES ==========
+
+// Função para limpar o formulário
 function limparFormulario() {
     document.getElementById('financingForm').reset();
     document.getElementById('resultsSection').classList.remove('active');
@@ -346,6 +406,9 @@ function limparFormulario() {
     dadosCalculoGlobal = null;
 }
 
+// ========== VISUALIZAÇÃO PDF ==========
+
+// Função para visualizar PDF em nova aba
 function exportarPDF() {
     if (!dadosCalculoGlobal) {
         alert('Realize um cálculo antes de exportar.');
@@ -357,35 +420,43 @@ function exportarPDF() {
     
     const { valorFinanciado, taxaJuros, numeroParcelas, dadosPRICE, dadosSAC } = dadosCalculoGlobal;
 
+    // Cores minimalistas
     const cinzaEscuro = [26, 26, 26];
     const cinzaMedio = [102, 102, 102];
     const cinzaClaro = [153, 153, 153];
     const branco = [255, 255, 255];
 
+    // Cabeçalho - Design Minimalista
     doc.setFillColor(250, 250, 250);
-    doc.rect(0, 0, 0, 30, 'F');
+    doc.rect(0, 0, 210, 30, 'F');
     
+            // Título principal com fonte serif elegante
             doc.setFont('times', 'bold');
             doc.setFontSize(22);
             doc.setTextColor(...cinzaEscuro);
             doc.text('Relatório de Financiamento', 20, 18);
     
+            // Subtítulo em fonte serif com estilo leve
             doc.setFont('times', 'normal');
             doc.setFontSize(10);
             doc.setTextColor(...cinzaMedio);
             doc.text('Comparação: Sistema PRICE vs Sistema SAC', 20, 26);
-
+    
+    // Linha sutil
     doc.setDrawColor(229, 229, 229);
     doc.setLineWidth(0.5);
     doc.line(20, 28, 190, 28);
 
+    // Dados de entrada
     let y = 40;
+    // Título da seção de dados com fonte serif elegante
     doc.setFont('times', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(...cinzaMedio);
     doc.text('DADOS DO FINANCIAMENTO', 20, y);
     
     y += 6;
+    // Legendas com fonte serif premium
     doc.setFont('times', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...cinzaEscuro);
@@ -403,11 +474,13 @@ function exportarPDF() {
     doc.setFont('times', 'bold');
     doc.text(`${numeroParcelas} meses`, 70, y + 10);
 
-    y = 65;
+    // ========== CARDS DE COMPARAÇÃO ==========
+    y = 55;
     
     const primeiraParcelaPRICE_card = dadosPRICE.parcelas[0];
     const ultimaParcelaSAC_card = dadosSAC.parcelas[dadosSAC.parcelas.length - 1];
     
+    // Card PRICE
     doc.setFillColor(250, 250, 250);
     doc.roundedRect(20, y, 85, 45, 3, 3, 'F');
     doc.setDrawColor(229, 229, 229);
@@ -462,6 +535,7 @@ function exportarPDF() {
     doc.text('Total Pago:', 25, y + 36);
     doc.text(formatarMoeda(dadosPRICE.totalPago), 65, y + 36);
     
+    // Card SAC
     doc.setFillColor(250, 250, 250);
     doc.roundedRect(110, y, 85, 45, 3, 3, 'F');
     doc.setDrawColor(229, 229, 229);
@@ -516,8 +590,10 @@ function exportarPDF() {
     doc.text('Total Pago:', 115, y + 36);
     doc.text(formatarMoeda(dadosSAC.totalPago), 155, y + 36);
 
-    y = 115;
+    // ========== RECOMENDAÇÃO EM DESTAQUE ==========
+    y = 105;
     
+    // Calcular dados para recomendação
     const economiaJuros = dadosPRICE.totalJuros - dadosSAC.totalJuros;
     const economiaTotal = dadosPRICE.totalPago - dadosSAC.totalPago;
     const percentualEconomia = (economiaTotal / dadosPRICE.totalPago * 100).toFixed(2);
@@ -549,13 +625,18 @@ function exportarPDF() {
         topicosPDF.push(`Ideal para quem prefere estabilidade e previsibilidade nas prestacoes`);
     }
     
+    // Box de destaque para recomendação
+    doc.setFillColor(2, 26, 26);
+    doc.roundedRect(20, y - 3, 170, 10, 2, 2, 'F');
+    
     doc.setFontSize(12);
-    doc.setTextColor(...cinzaEscuro);
+    doc.setTextColor(255, 255, 255);
     doc.setFont('times', 'bold');
     doc.text('RECOMENDAÇÃO', 25, y + 2);
     
     y += 10;
     
+    // Sistema recomendado em destaque
     doc.setFillColor(250, 250, 250);
     doc.roundedRect(20, y, 170, 14, 2, 2, 'F');
     
@@ -566,14 +647,17 @@ function exportarPDF() {
     
     y += 18;
     
+    // Tópicos da recomendação
     doc.setFontSize(8);
     doc.setFont('times', 'normal');
     doc.setTextColor(51, 51, 51);
     
     topicosPDF.forEach((topico, index) => {
+        // Bullet point
         doc.setFillColor(26, 26, 26);
         doc.circle(23, y + 1.5, 1.5, 'F');
         
+        // Texto do tópico
         const linhasTopico = doc.splitTextToSize(topico, 160);
         doc.text(linhasTopico, 28, y + 3);
         y += (linhasTopico.length * 4) + 2;
@@ -581,10 +665,12 @@ function exportarPDF() {
     
     y += 6;
     
+    // Linha separadora
     doc.setDrawColor(229, 229, 229);
     doc.setLineWidth(0.5);
     doc.line(20, y, 190, y);
     
+    // Sistema PRICE - título em fonte serif elegante
     y += 6;
     doc.setFillColor(250, 250, 250);
     doc.rect(20, y - 3, 170, 6, 'F');
@@ -618,6 +704,7 @@ function exportarPDF() {
     doc.setTextColor(...cinzaEscuro);
     doc.text(formatarMoeda(dadosPRICE.totalPago), 80, y + 8);
 
+    // Tabela PRICE
     y += 14;
     doc.autoTable({
         startY: y,
@@ -656,8 +743,10 @@ function exportarPDF() {
         margin: { left: 20, right: 20 }
     });
 
+    // Nova página para SAC
     doc.addPage();
     
+    // Sistema SAC - título em fonte serif elegante
     y = 18;
     doc.setFillColor(250, 250, 250);
     doc.rect(20, y - 3, 170, 6, 'F');
@@ -698,6 +787,7 @@ function exportarPDF() {
     doc.setTextColor(...cinzaEscuro);
     doc.text(formatarMoeda(dadosSAC.totalPago), 80, y + 12);
 
+    // Tabela SAC
     y += 18;
     doc.autoTable({
         startY: y,
@@ -736,10 +826,12 @@ function exportarPDF() {
         margin: { left: 20, right: 20 }
     });
 
+    // Rodapé minimalista em todas as páginas
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         
+        // Linha superior do rodapé
         doc.setDrawColor(229, 229, 229);
         doc.setLineWidth(0.3);
         doc.line(20, 282, 190, 282);
@@ -751,6 +843,9 @@ function exportarPDF() {
         doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 105, 291, { align: 'center' });
     }
 
+    // Abrir PDF em nova aba ao invés de salvar
     const pdfDataUri = doc.output('dataurlnewwindow');
+    
+    // Abrir em nova aba
     window.open(pdfDataUri, '_blank');
 }
