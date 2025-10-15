@@ -11,13 +11,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- External CSS -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Calcool</h1>
-            <p>Compare os sistemas PRICE e SAC e escolha a melhor opção para você</p>
+            <div class="brand">
+                <img src="assets/logo.png" alt="Calcool logo" class="brand-logo" />
+                <div class="brand-text">
+                    <h1>CalCool</h1>
+                    <p>Compare os sistemas PRICE e SAC e escolha a melhor opção para você</p>
+                </div>
+            </div>
         </header>
 
         <div class="input-section">
@@ -32,14 +37,18 @@
                         <input type="text" id="taxaJuros" placeholder="0,8" value="1,2" required>
                     </div>
                     <div class="form-group">
+                        <label for="rendaMensal">Renda Mensal (R$)</label>
+                        <input type="text" id="rendaMensal" placeholder="3.500,00" value="3500,00" required>
+                    </div>
+                    <div class="form-group">
                         <label for="numeroParcelas">Número de Parcelas</label>
                         <input type="text" id="numeroParcelas" placeholder="360" value="60" required>
                     </div>
                 </div>
                 <div class="button-group">
                     <button type="submit" class="btn-calculate">Calcular</button>
-                    <button type="button" class="btn-clear" onclick="limparFormulario()">Limpar</button>
-                    <button type="button" class="btn-export" onclick="exportarPDF()" id="btnExport" style="display: none;">Visualizar PDF</button>
+                    <button type="button" class="btn-clear">Limpar</button>
+                    <button type="button" class="btn-print" id="btnPrint" style="display: none;">Imprimir</button>
                 </div>
             </form>
         </div>
@@ -61,15 +70,14 @@
         </div>
 
         <div class="footer">
-            <p>Desenvolvido para auxiliar na escolha do melhor sistema de financiamento · 2025</p>
+            <p>Trabalho Acadêmico - Contabilidade e Aspectos Econômicos</p>
+            <p>Desenvolvido por João Vitor Machado Zucchetti</p>
         </div>
     </div>
 
-    <!-- Biblioteca jsPDF para visualizar PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Script da aplicação -->
-    <script src="app.js"></script>
+    <!-- Scripts da aplicação (MVC) -->
+    <script type="module" src="js/model.js"></script>
+    <script type="module" src="js/view.js"></script>
+    <script type="module" src="js/controller.js"></script>
 </body>
 </html>
