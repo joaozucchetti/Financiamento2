@@ -13,11 +13,10 @@ Calculadora comparativa entre os sistemas de financiamento PRICE e SAC, desenvol
 
 ## Funcionalidades
 
-- ✅ Comparação PRICE vs SAC
-- ✅ Recomendação baseada em renda
-- ✅ Tabelas detalhadas de parcelas
-- ✅ Interface responsiva e moderna
-- ✅ Opção de impressão dos resultados
+- Comparação PRICE vs SAC
+- Recomendação baseada em renda
+- Tabelas detalhadas de parcelas
+- Opção de impressão dos resultados
 
 ## Desenvolvedor
 
